@@ -2,7 +2,7 @@ import telebot
 import requests
 import sqlite3
 
-TOKEN = "8485772655:AAG2Ic-MJwayxUSJfHP6Otx4uD8ULdHFKH4"
+TOKEN = "8485772655:AAGGsn02oSt0G0akHBKOaGp_kNzkFyE_1xY"
 ADMIN_USERNAME = "@Kasper404_01"
 ADMIN_ID = 8954805209
 
