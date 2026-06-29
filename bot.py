@@ -3,11 +3,12 @@ import requests
 import sqlite3
 import os
 
-TOKEN = os.getenv("API_TOKEN")
+# Tokeningni shu yerga qo'y
+TOKEN = "TOKENINGNI_SHU_YERGA_QO'Y"
 ADMIN_ID = 8954805209
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 
-# --- BAZA VA HUQUQ ---
+# --- YORDAMCHI FUNKSIYALAR (KOD ISHLASHI UCHUN SHART) ---
 def init_db():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
@@ -16,6 +17,7 @@ def init_db():
     conn.close()
 
 def check_user_access(user_id):
+    if user_id == ADMIN_ID: return True
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
     cursor.execute("SELECT has_access FROM users WHERE user_id = ?", (user_id,))
@@ -23,44 +25,45 @@ def check_user_access(user_id):
     conn.close()
     return row is not None and row[0] == 1
 
-# --- KUCHAYTIRILGAN RSI HISOBLASH ---
 def calculate_rsi(prices, period=14):
-    gains, losses = [], []
-    for i in range(1, len(prices)):
-        diff = prices[i] - prices[i-1]
-        gains.append(max(diff, 0))
-        losses.append(max(-diff, 0))
-    avg_gain = sum(gains[-period:]) / period
-    avg_loss = sum(losses[-period:]) / period
-    if avg_loss == 0: return 100
+    delta = [prices[i] - prices[i-1] for i in range(1, len(prices))]
+    gains = [d for d in delta if d > 0]
+    losses = [abs(d) for d in delta if d < 0]
+    avg_gain = sum(gains[-period:]) / period if gains else 1
+    avg_loss = sum(losses[-period:]) / period if losses else 1
     rs = avg_gain / avg_loss
     return 100 - (100 / (1 + rs))
 
-# --- TUGMALAR ---
 def get_trading_keyboard():
     markup = telebot.types.InlineKeyboardMarkup(row_width=2)
-    pairs = [("EURUSDT", "EUR/USD"), ("GBPUSDT", "GBP/USD"), ("AUDUSDT", "AUD/USD"), ("USDJPYT", "USD/JPY")]
+    pairs = [("EURUSDT", "EUR/USD"), ("GBPUSDT", "GBP/USD"), ("AUDUSDT", "AUD/USD"), ("USDJPY", "USD/JPY"), ("NZDUSDT", "NZD/USD")]
     for s, d in pairs:
-        markup.add(telebot.types.InlineKeyboardButton(text=d, callback_data=f"sig_{s}_{d.replace('/', '_')}"))
+        markup.add(telebot.types.InlineKeyboardButton(d, callback_data=f"sig_{s}_{d}"))
     return markup
 
-# --- REAL VAQTDA SIGNAL TAHLILI ---
+# --- SEN YUBORGAN KOD (TUZATILGAN) ---
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id, "Analiz uchun juftlikni tanlang:", reply_markup=get_trading_keyboard())
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith('sig_'))
 def get_live_signal(call):
     if not check_user_access(call.from_user.id):
         bot.answer_callback_query(call.id, "❌ У вас больше нет доступа!", show_alert=True)
         return
 
-    # XATONI TUZATISH: split xavfsizligi
     parts = call.data.split('_', 2)
-    if len(parts) < 3:
-        bot.answer_callback_query(call.id, "Ошибка структуры!")
-        return
+    if len(parts) < 3: return
     _, symbol, display_name = parts
-    display_name = display_name.replace('_', '/')
     
     bot.answer_callback_query(call.id, "Идет анализ...")
-    
+    bot.edit_message_text(
+        chat_id=call.message.chat.id, 
+        message_id=call.message.message_id, 
+        text=f"⏳ Анализируем реальный график <b>{display_name}</b>..."
+    )
+
     try:
         url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1m&limit=40"
         res = requests.get(url, timeout=5)
@@ -85,19 +88,13 @@ def get_live_signal(call):
     except Exception as e:
         text = f"❌ Ошибка получения данных: {e}"
 
-    # XATONI TUZATISH: Edit qilishda xatolik chiqmasligi uchun try-except qo'shildi
-    try:
-        bot.edit_message_text(
-            chat_id=call.message.chat.id, 
-            message_id=call.message.message_id, 
-            text=text, 
-            reply_markup=get_trading_keyboard(),
-            parse_mode="HTML"
-        )
-    except:
-        pass
+    bot.edit_message_text(
+        chat_id=call.message.chat.id, 
+        message_id=call.message.message_id, 
+        text=text, 
+        reply_markup=get_trading_keyboard()
+    )
 
-# --- ADMIN BUYRUQLARI ---
 @bot.message_handler(func=lambda m: m.from_user.id == ADMIN_ID and m.text.startswith("/grant"))
 def grant_access(message):
     try:
@@ -124,9 +121,8 @@ def revoke_access(message):
     except Exception:
         bot.send_message(message.chat.id, "Формат: /revoke ID")
 
-# XATONI TUZATISH: __name__ va "__main__" to'g'rilandi
 if __name__ == "__main__":
     init_db()
     print("🚀 Бот муваффақиятли ишга тушди...")
     bot.infinity_polling()
-        
+    
