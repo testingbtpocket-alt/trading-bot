@@ -1,3 +1,2 @@
-aiogram
+pyTelegramBotAPI
 requests
-pandas
