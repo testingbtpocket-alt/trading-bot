@@ -39,7 +39,7 @@ def register_user(user_id, username):
     conn.commit()
     conn.close()
 
-# --- TOZA PYTHONDA RSI MATEMATIKASI ---
+# --- RSI MATEMATIKASI ---
 def calculate_rsi(prices, period=14):
     if len(prices) < period + 1:
         return 50
@@ -97,23 +97,23 @@ def start_handler(message):
     register_user(user_id, username)
     
     if not check_user_access(user_id):
+        # 1401.jpg dagi matn formati
         lock_text = (
-            f"📡 <b>TRADING SIGNALS BOT</b>\n"
-            f"-----------------------------------------\n"
-            f"👋 Привет, <b>{message.from_user.first_name}</b>!\n\n"
-            f"🔒 <b>Доступ закрыт.</b>\n\n"
-            f"Чтобы получить доступ — напиши администратору свой ID:\n\n"
-            f"📌 Твой ID: <code>{user_id}</code>\n"
-            f"👤 Администратор: {ADMIN_USERNAME}\n"
-            f"-----------------------------------------"
+            f"Робот на базе искусственного интеллекта и "
+            f"точного анализа рынка в реальном времени.\n"
+            f"🎯 Точность алгоритма: 91%\n"
+            f"📈 Время экспирации: 1-3 минуты\n"
+            f"🔒 Доступ ограничен. Для получения доступа "
+            f"нажмите кнопку \"Старт\" и отправьте свой ID администратору!"
         )
         bot.send_message(message.chat.id, lock_text, reply_markup=get_access_keyboard(user_id))
         return
 
     welcome_text = (
-        f"🤖 <b>AUTO_SIGNAL_BOT — Доступ разрешен!</b>\n\n"
-        f"Вы подключены к реальному потоку индикатора RSI.\n"
-        f"Выберите валютную пару для мгновенного сканирования рынка:"
+        f"Salom, <b>{message.from_user.first_name}</b>!\n"
+        f"📈 Pocket Option Signal Botiga xush kelibsiz.\n\n"
+        f"Bot fond bozorini tahlil qilishni boshladi.\n"
+        f"Kuchli signallar bo'lishi bilan shu yerga yuboraman!"
     )
     bot.send_message(message.chat.id, welcome_text, reply_markup=get_trading_keyboard())
 
@@ -196,4 +196,4 @@ if __name__ == "__main__":
     init_db()
     print("🚀 Бот муваффақиятли ишга тушди...")
     bot.infinity_polling()
-    
+        
