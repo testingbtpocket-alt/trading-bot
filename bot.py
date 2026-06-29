@@ -136,7 +136,7 @@ def get_live_signal(call):
 
     try:
         url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1m&limit=40"
-        res = requests.get(url, timeout=5)
+        res = requests.get(url, timeout=30)
         closes = [float(c[4]) for c in res.json()]
         last_rsi = calculate_rsi(closes, period=14)
         
