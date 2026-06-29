@@ -1,8 +1,8 @@
 import telebot
 import requests
 import sqlite3
-
-TOKEN = "8485772655:AAGGsn02oSt0G0akHBKOaGp_kNzkFyE_1xY"
+import os
+TOKEN = os.getenv("API_TOKEN")
 ADMIN_USERNAME = "@Kasper404_01"
 ADMIN_ID = 8954805209
 
