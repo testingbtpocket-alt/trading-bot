@@ -6,7 +6,7 @@ from aiogram.filters import CommandStart
 import aiohttp
 
 # Bot va Binance sozlamalari
-BOT_TOKEN = "8841099176:AAEkmDk_zV8DWVQ7xmu_Pmej89heShNNRIB" "KASPER_BOT_TOKENINI_SHU_YERGA_YOZING"
+BOT_TOKEN = "8485772655:AAG2Ic-MJwayxUSJfHP6Otx4uD8ULdHFKH4"
 BINANCE_URL = "https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT"
 
 # Loglarni sozlash (Xatoliklarni ko'rish uchun)
